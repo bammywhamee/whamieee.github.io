@@ -1507,10 +1507,6 @@ const EXTRAS_ACCESS_CODE = "9982";
 const EXTRAS_ACCESS_STORAGE_KEY = "whamiee-extras-access-code-v1";
 
 function extrasAccessIsRemembered(){
-  if(extrasAccessIsRemembered()){
-    extrasOneTimeAuth = true;
-  }
-
   try{
     return localStorage.getItem(EXTRAS_ACCESS_STORAGE_KEY) === EXTRAS_ACCESS_CODE;
   }catch(e){
@@ -2645,7 +2641,47 @@ const whamWebFrame=document.getElementById("whamieeWebFrame");
 const whamWebAddress=document.getElementById("whamWebAddress");
 const whamWebStatus=document.getElementById("whamWebStatus");
 
-const WHAM_WEB_HOME_URL="https://bammywhamee.github.io/";
+const WHAM_WEB_HOME=`
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#080808;color:#fff;font-family:Arial,Helvetica,sans-serif}
+main{min-height:100%;display:grid;place-items:center;padding:30px;background:radial-gradient(circle at 20% 10%,rgba(255,45,80,.16),transparent 30%),#080808}
+.box{width:min(680px,100%);text-align:center}
+h1{font-size:48px;margin:0 0 10px;letter-spacing:-2px}h1 span{color:#ff2d50}
+p{color:#8d8d8d;line-height:1.6}
+.search{display:flex;gap:8px;margin-top:28px}
+input{flex:1;height:48px;border:1px solid #2a2a2a;border-radius:12px;background:#111;color:#fff;padding:0 14px;font-size:15px;outline:none}
+button{border:0;border-radius:12px;padding:0 20px;background:#ff2d50;color:#fff;font-weight:900;cursor:pointer}
+</style>
+</head>
+<body>
+<main>
+  <div class="box">
+    <h1>WHAMIEE <span>WEB</span></h1>
+    <p>Search the web or enter a website address.</p>
+    <div class="search">
+      <input id="q" placeholder="Search the web..." autofocus>
+      <button onclick="go()">SEARCH</button>
+    </div>
+  </div>
+</main>
+<script>
+function go(){
+  const q=document.getElementById('q').value.trim();
+  if(q) parent.postMessage({type:'whamiee-web-search',value:q},'*');
+}
+document.getElementById('q').addEventListener('keydown',e=>{if(e.key==='Enter')go()});
+<\/script>
+</body>
+</html>`;
+
+let whamWebHistory=[];
+let whamWebHistoryIndex=-1;
+let whamWebCurrentUrl="";
 
 function whamWebLooksLikeUrl(value){
   return /^https?:\/\//i.test(value)||/^localhost(?::\d+)?/i.test(value)||/^[a-z0-9.-]+\.[a-z]{2,}(?:[/:?#]|$)/i.test(value);
@@ -2695,17 +2731,19 @@ function whamWebOpenDirect(){
   if(whamWebCurrentUrl)window.open(whamWebCurrentUrl,"_blank","noopener,noreferrer");
 }
 function whamWebHome(clearAddress=true){
-  whamWebLoad(WHAM_WEB_HOME_URL,false);
-  if(clearAddress)whamWebAddress.value=WHAM_WEB_HOME_URL;
+  whamWebCurrentUrl="";
+  whamWebFrame.removeAttribute("src");
+  whamWebFrame.srcdoc=WHAM_WEB_HOME;
+  if(clearAddress)whamWebAddress.value="";
   whamWebStatus.textContent="WHAMIEE WEB home";
 }
 function openWhamieeWebFromExtras(){
   closeExtras();
   goPage("web");
-  if(!whamWebCurrentUrl)whamWebHome();
+  if(!whamWebCurrentUrl&&!whamWebFrame.srcdoc)whamWebHome();
 }
 whamWebAddress?.addEventListener("keydown",e=>{if(e.key==="Enter")whamWebNavigateFromBar()});
-whamWebFrame?.addEventListener("load",()=>{whamWebStatus.textContent="Loaded"});
+whamWebFrame?.addEventListener("load",()=>{whamWebStatus.textContent=whamWebCurrentUrl?"Loaded":"WHAMIEE WEB home"});
 window.addEventListener("message",e=>{
   if(e.data&&e.data.type==="whamiee-web-search"){
     whamWebAddress.value=e.data.value;

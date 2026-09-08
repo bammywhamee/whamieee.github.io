@@ -1202,27 +1202,16 @@ body.whamiee-site-locked{overflow:hidden!important}
 
 
 <!-- WHAMIEE WEB -->
-<main id="page-web" class="page">
-  <div class="web-page-shell">
-    <div class="web-toolbar">
-      <div class="web-brand">WHAMIEE <span>WEB</span></div>
-      <div class="web-controls">
-        <button class="web-icon-btn" type="button" title="Back" onclick="whamWebBack()">←</button>
-        <button class="web-icon-btn" type="button" title="Forward" onclick="whamWebForward()">→</button>
-        <button class="web-icon-btn" type="button" title="Reload" onclick="whamWebReload()">↻</button>
-        <button class="web-icon-btn" type="button" title="Home" onclick="whamWebHome()">⌂</button>
-      </div>
-      <div class="web-address-wrap">
-        <input id="whamWebAddress" class="web-address" type="text" autocomplete="off" spellcheck="false" placeholder="Search the web or enter a URL...">
-        <button class="web-go" type="button" onclick="whamWebNavigateFromBar()">GO</button>
-      </div>
-      <button class="web-open-direct" type="button" onclick="whamWebOpenDirect()">OPEN DIRECT ↗</button>
-    </div>
-    <div class="web-statusbar"><span id="whamWebStatus">Ready</span></div>
-    <div class="web-viewport">
-      <iframe id="whamieeWebFrame" title="WHAMIEE Web" referrerpolicy="strict-origin-when-cross-origin" allow="fullscreen; autoplay; clipboard-read; clipboard-write; picture-in-picture"></iframe>
-    </div>
-  </div>
+<main id="page-web" class="page" style="padding:0;margin:0;overflow:hidden;background:#000;">
+  <iframe
+    id="whamieeWebFrame"
+    src="bammywhamee.html"
+    title="BammyWhamee"
+    allow="fullscreen; autoplay; clipboard-read; clipboard-write; picture-in-picture"
+    allowfullscreen
+    referrerpolicy="strict-origin-when-cross-origin"
+    style="display:block;width:100%;height:calc(100dvh - 69px);min-height:calc(100vh - 69px);border:0;margin:0;padding:0;background:#000;">
+  </iframe>
 </main>
 
 <!-- HIDDEN EXTRAS DRAWER -->
@@ -1341,7 +1330,7 @@ body.whamiee-site-locked{overflow:hidden!important}
   </div>
 </div>
 
-<footer class="footer">
+<footer id="siteFooter" class="footer">
   <div class="brand" style="font-size:28px;text-shadow:none">WHAMIEE 🍿</div>
   <div style="margin-top:7px">One HTML. Home, Movies, TV Shows, and Extras.</div>
 </footer>
@@ -1479,6 +1468,12 @@ function esc(s){
 function goPage(name){
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
   document.getElementById("page-"+name).classList.add("active");
+
+  const siteFooter=document.getElementById("siteFooter");
+  if(siteFooter) siteFooter.style.display = name==="web" ? "none" : "";
+
+  const extrasTab=document.querySelector(".extras-tab");
+  if(extrasTab) extrasTab.style.display = name==="web" ? "none" : "";
 
   document.querySelectorAll(".nav button").forEach(b=>{
     b.classList.toggle("active",b.dataset.page===name);
@@ -2637,121 +2632,20 @@ document.getElementById("gameModal")?.addEventListener("click",e=>{
 
 
 /* ---------- WHAMIEE WEB ---------- */
-const whamWebFrame=document.getElementById("whamieeWebFrame");
-const whamWebAddress=document.getElementById("whamWebAddress");
-const whamWebStatus=document.getElementById("whamWebStatus");
+const WHAM_WEB_HOME_URL="bammywhamee.html";
 
-const WHAM_WEB_HOME=`
-<!doctype html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<style>
-*{box-sizing:border-box}
-html,body{margin:0;height:100%;background:#080808;color:#fff;font-family:Arial,Helvetica,sans-serif}
-main{min-height:100%;display:grid;place-items:center;padding:30px;background:radial-gradient(circle at 20% 10%,rgba(255,45,80,.16),transparent 30%),#080808}
-.box{width:min(680px,100%);text-align:center}
-h1{font-size:48px;margin:0 0 10px;letter-spacing:-2px}h1 span{color:#ff2d50}
-p{color:#8d8d8d;line-height:1.6}
-.search{display:flex;gap:8px;margin-top:28px}
-input{flex:1;height:48px;border:1px solid #2a2a2a;border-radius:12px;background:#111;color:#fff;padding:0 14px;font-size:15px;outline:none}
-button{border:0;border-radius:12px;padding:0 20px;background:#ff2d50;color:#fff;font-weight:900;cursor:pointer}
-</style>
-</head>
-<body>
-<main>
-  <div class="box">
-    <h1>WHAMIEE <span>WEB</span></h1>
-    <p>Search the web or enter a website address.</p>
-    <div class="search">
-      <input id="q" placeholder="Search the web..." autofocus>
-      <button onclick="go()">SEARCH</button>
-    </div>
-  </div>
-</main>
-<script>
-function go(){
-  const q=document.getElementById('q').value.trim();
-  if(q) parent.postMessage({type:'whamiee-web-search',value:q},'*');
-}
-document.getElementById('q').addEventListener('keydown',e=>{if(e.key==='Enter')go()});
-<\/script>
-</body>
-</html>`;
-
-let whamWebHistory=[];
-let whamWebHistoryIndex=-1;
-let whamWebCurrentUrl="";
-
-function whamWebLooksLikeUrl(value){
-  return /^https?:\/\//i.test(value)||/^localhost(?::\d+)?/i.test(value)||/^[a-z0-9.-]+\.[a-z]{2,}(?:[/:?#]|$)/i.test(value);
-}
-function whamWebNormalizeInput(value){
-  const v=value.trim();
-  if(!v)return null;
-  if(whamWebLooksLikeUrl(v)) return /^https?:\/\//i.test(v)?v:"https://"+v;
-  return "https://www.bing.com/search?q="+encodeURIComponent(v);
-}
-function whamWebLoad(url,addHistory=true){
-  if(!url)return;
-  whamWebCurrentUrl=url;
-  whamWebAddress.value=url;
-  whamWebStatus.textContent="Loading...";
-  whamWebFrame.removeAttribute("srcdoc");
-  whamWebFrame.src=url;
-  if(addHistory){
-    whamWebHistory=whamWebHistory.slice(0,whamWebHistoryIndex+1);
-    whamWebHistory.push(url);
-    whamWebHistoryIndex=whamWebHistory.length-1;
+function whamWebHome(){
+  const frame=document.getElementById("whamieeWebFrame");
+  if(frame && frame.getAttribute("src")!==WHAM_WEB_HOME_URL){
+    frame.setAttribute("src",WHAM_WEB_HOME_URL);
   }
 }
-function whamWebNavigateFromBar(){
-  const target=whamWebNormalizeInput(whamWebAddress.value);
-  if(target)whamWebLoad(target,true);
-}
-function whamWebBack(){
-  if(whamWebHistoryIndex>0){
-    whamWebHistoryIndex--;
-    whamWebLoad(whamWebHistory[whamWebHistoryIndex],false);
-  }else whamWebHome(false);
-}
-function whamWebForward(){
-  if(whamWebHistoryIndex<whamWebHistory.length-1){
-    whamWebHistoryIndex++;
-    whamWebLoad(whamWebHistory[whamWebHistoryIndex],false);
-  }
-}
-function whamWebReload(){
-  if(whamWebCurrentUrl){
-    whamWebFrame.src=whamWebCurrentUrl;
-    whamWebStatus.textContent="Reloading...";
-  }else whamWebHome(false);
-}
-function whamWebOpenDirect(){
-  if(whamWebCurrentUrl)window.open(whamWebCurrentUrl,"_blank","noopener,noreferrer");
-}
-function whamWebHome(clearAddress=true){
-  whamWebCurrentUrl="";
-  whamWebFrame.removeAttribute("src");
-  whamWebFrame.srcdoc=WHAM_WEB_HOME;
-  if(clearAddress)whamWebAddress.value="";
-  whamWebStatus.textContent="WHAMIEE WEB home";
-}
+
 function openWhamieeWebFromExtras(){
   closeExtras();
   goPage("web");
-  if(!whamWebCurrentUrl&&!whamWebFrame.srcdoc)whamWebHome();
+  whamWebHome();
 }
-whamWebAddress?.addEventListener("keydown",e=>{if(e.key==="Enter")whamWebNavigateFromBar()});
-whamWebFrame?.addEventListener("load",()=>{whamWebStatus.textContent=whamWebCurrentUrl?"Loaded":"WHAMIEE WEB home"});
-window.addEventListener("message",e=>{
-  if(e.data&&e.data.type==="whamiee-web-search"){
-    whamWebAddress.value=e.data.value;
-    whamWebNavigateFromBar();
-  }
-});
-whamWebHome();
-
 
 
 /* ---------- REAL SLOPE HTML ---------- */

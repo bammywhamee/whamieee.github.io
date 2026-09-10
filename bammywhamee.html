@@ -1,32 +1,636 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>BammyWhamiee</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WHAMIEE</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fredoka:wght@400;500;600;700&display=swap');
 
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #000;
-    }
+:root{
+  --bg:#070707;--panel:#111;--panel2:#171717;--line:rgba(255,255,255,.12);
+  --red:#ff2d50;--purple:#a56dff;--gold:#ffd34d;--muted:#8f8f8f;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;color:#fff;font-family:Fredoka,sans-serif;background:
+  radial-gradient(circle at 10% -10%,rgba(165,109,255,.14),transparent 28%),
+  radial-gradient(circle at 95% 0%,rgba(255,45,80,.15),transparent 30%),
+  var(--bg);
+}
+button,input{font-family:inherit}
+a{color:inherit}
 
-    iframe {
-      display: block;
-      width: 100%;
-      height: 100vh;
-      border: 0;
-    }
-  </style>
+/* TOP NAV */
+.top{
+  position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:22px;
+  padding:16px 28px;background:rgba(7,7,7,.88);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line);
+}
+.brand{
+  white-space:nowrap;font:800 35px/1 'Baloo 2',sans-serif;color:var(--red);
+  text-shadow:3px 3px #fff,6px 6px rgba(255,45,80,.18)
+}
+.nav{display:flex;gap:22px;justify-content:center;flex:1}
+.nav button{
+  border:0;background:transparent;color:#c7c7c7;cursor:pointer;
+  font-size:12px;font-weight:800;padding:7px 0
+}
+.nav button:hover,.nav button.active{color:#fff}
+.nav button.active{border-bottom:2px solid var(--red)}
+.search{
+  display:flex;align-items:center;gap:8px;background:#151515;border:1px solid var(--line);
+  border-radius:999px;padding:9px 12px
+}
+.search input{width:150px;border:0;outline:0;background:transparent;color:#fff}
+.search input::placeholder{color:#6e6e6e}
+
+/* PAGES */
+.page{display:none}
+.page.active{display:block}
+
+/* HERO */
+.hero{
+  min-height:520px;position:relative;display:flex;align-items:flex-end;overflow:hidden;
+  background:linear-gradient(135deg,#141414,#090909)
+}
+.hero-bg{position:absolute;inset:0;background:center/cover no-repeat;opacity:.68}
+.hero:after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(0,0,0,.97),rgba(0,0,0,.68) 42%,rgba(0,0,0,.18) 75%),
+             linear-gradient(0deg,var(--bg),transparent 52%)
+}
+.hero-inner{position:relative;z-index:3;padding:72px 6%;max-width:760px}
+.kicker{
+  display:inline-block;padding:7px 11px;border-radius:999px;border:1px solid rgba(255,45,80,.6);
+  background:rgba(255,45,80,.11);font-size:11px;font-weight:800
+}
+.hero h1{
+  margin:16px 0 5px;font:800 clamp(60px,8vw,108px)/.82 'Baloo 2',sans-serif;
+  color:var(--red);-webkit-text-stroke:2px #fff
+}
+.hero p{color:#d0d0d0;line-height:1.55;max-width:610px}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.cta{
+  border:1px solid var(--line);background:#191919;color:#fff;padding:12px 18px;
+  border-radius:999px;font-size:11px;font-weight:800;cursor:pointer
+}
+.cta.primary{background:var(--red);border-color:transparent}
+
+/* SECTIONS */
+.section{padding:28px 5%}
+.head{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:16px}
+.head h2{margin:0;font:800 31px/1 'Baloo 2'}
+.head h2 span{color:var(--red)}
+.head small{color:#737373}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px}
+.card{
+  background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;
+  transition:.22s
+}
+.card:hover{transform:translateY(-7px);border-color:rgba(255,45,80,.55);box-shadow:0 22px 55px rgba(0,0,0,.45)}
+.poster{aspect-ratio:2/3;position:relative;overflow:hidden;background:linear-gradient(145deg,#1b1b1b,#090909)}
+.poster img{width:100%;height:100%;object-fit:cover;display:none;transition:.3s}
+.poster img.fit-contain{
+  object-fit:contain;
+  object-position:center;
+  padding:8px;
+  background:linear-gradient(145deg,#121212,#050505);
+}
+.card:hover .poster img.fit-contain{transform:none}
+.card:hover .poster img{transform:scale(1.045)}
+.placeholder{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#727272;font-size:10px;padding:12px}
+.placeholder b{display:block;font:800 18px/.95 'Baloo 2';color:#fff;margin-bottom:7px}
+.card-info{padding:11px}
+.card-info h3{margin:0;font:800 19px/.95 'Baloo 2'}
+.card-info small{color:#777}
+.card-btn{
+  width:100%;margin-top:9px;padding:8px;border:1px solid var(--line);border-radius:9px;
+  background:#191919;color:#fff;cursor:pointer;font-size:10px;font-weight:800
+}
+.card-btn:hover{background:var(--red)}
+
+.card-btn.unavailable,
+.episode button.unavailable,
+.modal-watch-btn.unavailable{
+  background:#151515 !important;
+  border-color:#2a2a2a !important;
+  color:#777 !important;
+  cursor:not-allowed !important;
+  opacity:.82;
+  transform:none !important;
+}
+.card-btn.unavailable:hover,
+.episode button.unavailable:hover,
+.modal-watch-btn.unavailable:hover{
+  background:#151515 !important;
+  color:#777 !important;
+}
+
+.card-actions{
+  display:grid;
+  gap:7px;
+  margin-top:9px;
+}
+.card-actions .card-btn{margin-top:0}
+.favorite-btn{
+  border-color:rgba(255,255,255,.17);
+}
+.favorite-btn.saved{
+  background:rgba(255,45,80,.16);
+  border-color:rgba(255,45,80,.58);
+  color:#fff;
+}
+.favorite-btn.saved:hover{
+  background:var(--red);
+}
+.modal-favorite-row{
+  margin:12px 0 2px;
+}
+.modal-favorite{
+  border:1px solid rgba(255,255,255,.18);
+  background:#181818;
+  color:#fff;
+  border-radius:999px;
+  padding:10px 15px;
+  cursor:pointer;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.35px;
+}
+.modal-favorite.saved{
+  background:rgba(255,45,80,.16);
+  border-color:rgba(255,45,80,.58);
+}
+
+/* MOVIE FILTERS */
+.filters{display:flex;flex-wrap:wrap;gap:8px;padding:24px 5% 0}
+.filter{
+  border:1px solid var(--line);background:#111;color:#fff;border-radius:999px;padding:8px 11px;
+  cursor:pointer;font-size:10px;font-weight:800
+}
+.filter.active,.filter:hover{border-color:rgba(255,45,80,.6);background:rgba(255,45,80,.11)}
+
+/* MODAL / PLAYER */
+.modal{
+  position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;
+  padding:18px;background:rgba(0,0,0,.82);backdrop-filter:blur(9px)
+}
+.modal.open{display:flex}
+.modal-box{
+  width:min(900px,100%);max-height:92vh;overflow:auto;background:#111;border:1px solid var(--line);
+  border-radius:22px;box-shadow:0 40px 110px rgba(0,0,0,.7)
+}
+.modal-banner{min-height:300px;position:relative;background:center/cover no-repeat}
+.modal-banner:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#111,transparent 75%)}
+.close{
+  position:absolute;top:14px;right:14px;z-index:4;width:36px;height:36px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.55);color:#fff;cursor:pointer
+}
+.modal-body{padding:22px}
+.modal-body h2{margin:0;font:800 40px/.9 'Baloo 2'}
+.modal-body p{color:#c6c6c6;line-height:1.5}
+.player{display:none;margin-top:16px}
+.player iframe{width:100%;aspect-ratio:16/9;border:0;border-radius:12px;background:#000}
+.player-note{font-size:10px;color:#777;margin-top:7px}
+.player-controls{
+  display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;margin-top:10px
+}
+.player-action{
+  appearance:none;border:1px solid rgba(255,255,255,.18);background:#fff;color:#111;
+  padding:10px 16px;border-radius:999px;font-weight:900;font-size:10px;letter-spacing:.35px;
+  cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center
+}
+.player-action:hover{transform:translateY(-1px);filter:brightness(.92)}
+.player-action.secondary{background:#171717;color:#fff}
+.fullscreen-status{
+  display:none;margin-top:8px;padding:9px 11px;border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;background:#161616;color:#bbb;font-size:10px;line-height:1.4;text-align:center
+}
+
+.seasons{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.season{
+  border:1px solid var(--line);background:#181818;color:#fff;border-radius:999px;padding:8px 11px;
+  cursor:pointer;font-size:10px;font-weight:800
+}
+.season.active{background:rgba(255,45,80,.12);border-color:rgba(255,45,80,.55)}
+.episodes{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.episode{padding:12px;border:1px solid var(--line);border-radius:12px;background:#161616}
+.episode b{font-size:12px}
+.episode small{display:block;color:#777;margin:4px 0 8px}
+.episode-desc{font-size:11px;line-height:1.45;color:#aaa;margin:6px 0 8px}
+.episode button{
+  width:100%;padding:7px;border:1px solid var(--line);border-radius:8px;background:#1b1b1b;color:#fff;
+  cursor:pointer;font-size:10px;font-weight:800
+}
+.episode button:hover{background:var(--red)}
+
+/* EXTRAS SIDE DRAWER */
+.extras-tab{
+  position:fixed;right:0;top:45%;z-index:70;
+  writing-mode:vertical-rl;transform:rotate(180deg);
+  border:1px solid rgba(255,255,255,.14);border-right:0;
+  background:rgba(16,16,16,.94);color:#fff;
+  padding:13px 9px;border-radius:12px 0 0 12px;
+  cursor:pointer;font-size:10px;font-weight:800;letter-spacing:1px
+}
+.extras-drawer{
+  position:fixed;top:0;right:-340px;z-index:80;width:320px;height:100vh;
+  background:rgba(13,13,13,.97);backdrop-filter:blur(18px);
+  border-left:1px solid var(--line);padding:78px 18px 22px;
+  transition:right .28s ease;overflow:auto
+}
+.extras-drawer.open{right:0}
+.extras-drawer h2{font:800 31px/1 'Baloo 2';margin:0 0 8px}
+.extras-drawer p{color:#8d8d8d;font-size:12px;line-height:1.5}
+.extra-card{
+  margin-top:12px;padding:13px;border:1px solid var(--line);border-radius:13px;background:#151515
+}
+.extra-card b{display:block;margin-bottom:4px}
+.extra-card small{color:#777}
+.extra-close{
+  position:absolute;top:18px;right:18px;width:34px;height:34px;border-radius:50%;
+  border:1px solid var(--line);background:#191919;color:#fff;cursor:pointer
+}
+
+
+/* EXTRAS ACCESS LOCK */
+.extras-lock{
+  position:fixed;inset:0;z-index:120;
+  display:none;align-items:center;justify-content:center;
+  padding:22px;background:rgba(0,0,0,.78);backdrop-filter:blur(14px)
+}
+.extras-lock.open{display:flex}
+.extras-lock-box{
+  position:relative;width:min(390px,92vw);
+  padding:30px 26px 25px;
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:22px;
+  background:linear-gradient(145deg,#181818,#0e0e0e);
+  box-shadow:0 28px 80px rgba(0,0,0,.65);
+  text-align:center
+}
+.extras-lock-icon{
+  width:58px;height:58px;margin:0 auto 14px;
+  display:grid;place-items:center;border-radius:50%;
+  background:rgba(255,45,80,.12);
+  border:1px solid rgba(255,45,80,.35);
+  font-size:25px
+}
+.extras-lock-box h2{
+  margin:0 0 7px;font:800 29px/1 'Baloo 2';letter-spacing:.4px
+}
+.extras-lock-box p{
+  margin:0 auto 18px;max-width:290px;color:#8d8d8d;
+  font-size:12px;line-height:1.5
+}
+.extras-code{
+  width:100%;box-sizing:border-box;
+  border:1px solid var(--line);border-radius:12px;
+  background:#0b0b0b;color:#fff;
+  padding:13px 14px;text-align:center;
+  font-size:20px;font-weight:800;letter-spacing:8px;
+  outline:none
+}
+.extras-code:focus{border-color:rgba(255,45,80,.7);box-shadow:0 0 0 3px rgba(255,45,80,.1)}
+.extras-unlock-btn{
+  width:100%;margin-top:11px;padding:12px 14px;
+  border:0;border-radius:12px;background:var(--red);
+  color:#fff;font-weight:900;letter-spacing:.7px;cursor:pointer
+}
+.extras-lock-msg{
+  min-height:18px;margin-top:10px;
+  color:#ff6078;font-size:11px;font-weight:800
+}
+.extras-lock-close{
+  position:absolute;top:12px;right:12px;
+  width:32px;height:32px;border-radius:50%;
+  border:1px solid var(--line);background:#171717;color:#fff;cursor:pointer
+}
+.extras-tab .lock-mark{margin-bottom:5px}
+
+.footer{border-top:1px solid var(--line);margin-top:25px;padding:40px 5%;text-align:center;color:#666;font-size:11px}
+
+
+.hero-dots{
+  position:absolute;left:50%;bottom:24px;z-index:5;transform:translateX(-50%);
+  display:flex;gap:7px;align-items:center;justify-content:center;flex-wrap:wrap;max-width:420px
+}
+.hero-dot{
+  width:8px;height:8px;border:0;border-radius:999px;background:#777;cursor:pointer;padding:0;
+  transition:.2s
+}
+.hero-dot.active{width:24px;background:#fff}
+
+
+.hero-poster-shell{
+  position:absolute;
+  right:5%;
+  bottom:48px;
+  z-index:4;
+  width:min(300px,22vw);
+  aspect-ratio:2/3;
+  border-radius:18px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 28px 70px rgba(0,0,0,.65);
+  background:#101010;
+}
+.hero-poster-shell img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  background:#090909;
+  display:block;
+}
+.hero-bg{
+  filter:blur(1.5px) saturate(.9);
+  transform:scale(1.025);
+}
+.card-desc{
+  color:#929292;
+  font-size:10px;
+  line-height:1.35;
+  margin-top:7px;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+  min-height:27px;
+}
+@media(max-width:850px){
+  .hero-poster-shell{
+    width:145px;
+    right:14px;
+    bottom:58px;
+    opacity:.82;
+  }
+}
+@media(max-width:560px){
+  .hero-poster-shell{display:none}
+}
+
+@media(max-width:850px){
+  .top{flex-wrap:wrap;padding:14px 15px}
+  .nav{order:3;width:100%;justify-content:flex-start;overflow:auto}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .extras-drawer{width:min(320px,90vw)}
+}
+
+/* WHAMIEE PROXY BROWSER */
+.web-page-shell{height:calc(100vh - 74px);min-height:620px;display:flex;flex-direction:column;background:#050505}
+.web-toolbar{min-height:64px;display:flex;align-items:center;gap:9px;padding:10px 12px;border-bottom:1px solid #292929;background:#101010}
+.web-brand{font-weight:900;letter-spacing:1px;white-space:nowrap;margin-right:4px}
+.web-brand span{color:var(--red)}
+.web-controls{display:flex;gap:6px}
+.web-icon-btn{width:38px;height:38px;border:1px solid #292929;border-radius:10px;background:#171717;color:#fff;cursor:pointer;font-size:16px;font-weight:900;transition:.18s}
+.web-icon-btn:hover{background:#252525;border-color:#3a3a3a}
+.web-address-wrap{flex:1;min-width:120px;position:relative}
+.web-address{width:100%;height:40px;border:1px solid #292929;border-radius:11px;background:#090909;color:#fff;padding:0 95px 0 13px;outline:none;font-size:12px}
+.web-address::placeholder{color:#555}
+.web-address:focus{border-color:#4a4a4a;box-shadow:0 0 0 2px rgba(255,255,255,.04)}
+.web-go{position:absolute;right:4px;top:4px;height:32px;border:0;border-radius:8px;padding:0 14px;background:var(--red);color:#fff;font-weight:900;cursor:pointer;font-size:11px}
+.web-go:hover{filter:brightness(1.1)}
+.web-statusbar{min-height:29px;display:flex;align-items:center;padding:0 12px;border-bottom:1px solid #181818;background:#0b0b0b;color:#8d8d8d;font-size:10px}
+.web-viewport{flex:1;min-height:0;position:relative;background:#000;overflow:hidden}
+#proxyFrame{width:100%;height:100%;border:0;background:#fff}
+.proxy-loading{display:none;position:absolute;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;z-index:10}
+.proxy-home{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#777;flex-direction:column;gap:20px;text-align:center}
+.proxy-home-icon{font-size:64px}
+.proxy-home-title{font-size:24px;font-weight:900;color:#fff}
+.proxy-home-desc{font-size:12px;color:#555;margin-bottom:20px}
+.proxy-input-container{display:flex;gap:10px;width:min(500px,90%)}
+.proxy-input-container input{flex:1;padding:12px;border:1px solid #292929;border-radius:8px;background:#090909;color:#fff;font-size:12px;outline:none}
+.proxy-input-container input:focus{border-color:#4a4a4a}
+.proxy-input-container button{padding:12px 20px;background:var(--red);color:#fff;border:0;border-radius:8px;font-weight:900;cursor:pointer}
+@media(max-width:760px){
+  .web-toolbar{flex-wrap:wrap}
+  .web-brand{width:100%}
+  .web-address-wrap{order:3;width:100%}
+}
+
+</style>
 </head>
+<body class="whamiee-site-locked">
+<!-- WHAMIEE MAIN ACCESS LOCK -->
+<div id="whamieeMainLock" role="dialog" aria-modal="true" aria-labelledby="whamieeMainLockTitle">
+  <div class="whamiee-lock-card">
+    <div class="whamiee-lock-brand" id="whamieeMainLockTitle">WHAM<span>IEE</span></div>
+    <p class="whamiee-lock-sub">Enter the site access code to continue.</p>
+    <input id="whamieeMainCode" type="password" inputmode="numeric" autocomplete="off"
+           maxlength="4" placeholder="••••" aria-label="Site access code">
+    <button id="whamieeMainUnlockBtn" type="button">ENTER WHAMIEE</button>
+    <div id="whamieeMainLockError" aria-live="polite"></div>
+  </div>
+</div>
 
-<body>
-  <iframe
-    src="bammywhamee.github.io/"
-    allowfullscreen>
-  </iframe>
+
+<header class="top">
+  <div class="brand">WHAMIEE 🍿</div>
+  <nav class="nav">
+    <button class="active" data-page="home">HOME</button>
+    <button data-page="movies">MOVIES</button>
+    <button data-page="tv">TV SHOWS</button>
+    <button data-page="favorites">FAVORITES</button>
+    <button data-page="proxy">🌐 PROXY</button>
+  </nav>
+  <label class="search">🔎 <input id="globalSearch" type="search" placeholder="Search movies & shows..." autocomplete="off"></label>
+</header>
+
+<!-- HOME -->
+<main id="page-home" class="page active">
+  <section class="hero">
+    <div id="heroBg" class="hero-bg"></div>
+    <div class="hero-poster-shell"><img id="heroPoster" alt="Featured poster"></div>
+    <div class="hero-inner">
+      <div class="kicker" id="heroKicker">🍿 FEATURED ON WHAMIEE</div>
+      <h1 id="heroTitle">HOME</h1>
+      <p id="heroText">Your movies and shows in one streaming-style site.</p>
+      <div class="hero-actions">
+        <button class="cta primary" onclick="goPage('movies')">▶ BROWSE MOVIES</button>
+        <button class="cta" onclick="goPage('newlyadded')">✨ NEWLY ADDED</button>
+        <button class="cta" onclick="goPage('tv')">📺 TV SHOWS</button>
+      </div>
+    </div>
+    <div class="hero-dots" id="heroDots"></div>
+  </section>
+
+  <section class="section">
+    <div class="head"><h2>FEATURED <span>MOVIES</span> 🎬</h2></div>
+    <div id="homeMovies" class="grid"></div>
+  </section>
+
+  <section class="section">
+    <div class="head"><h2>TV <span>PICKS</span> 📺</h2></div>
+    <div id="homeShows" class="grid"></div>
+  </section>
+</main>
+
+
+<!-- NEWLY ADDED -->
+<main id="page-newlyadded" class="page">
+  <section class="hero" style="min-height:300px">
+    <div class="hero-inner">
+      <div class="kicker">✨ FRESH ON WHAMIEE</div>
+      <h1>NEWLY ADDED</h1>
+      <p>The 10 most recently added movies and TV shows.</p>
+    </div>
+  </section>
+</main>
+
+
+<!-- WHAMIEE PROXY BROWSER -->
+<main id="page-proxy" class="page">
+  <section class="web-page-shell">
+    <div class="web-toolbar">
+      <span class="web-brand">WHAM<span>IEE</span> PROXY</span>
+      <div class="web-controls">
+        <button class="web-icon-btn" onclick="proxyGoBack()" title="Back">←</button>
+        <button class="web-icon-btn" onclick="proxyGoForward()" title="Forward">→</button>
+        <button class="web-icon-btn" onclick="proxyReload()" title="Reload">⟳</button>
+      </div>
+      <div class="web-address-wrap">
+        <input id="proxyUrl" class="web-address" type="text" placeholder="Enter URL (e.g., youtube.com, netflix.com, google.com)..." autocomplete="off">
+        <button class="web-go" onclick="loadProxyPage()">GO</button>
+      </div>
+    </div>
+    <div class="web-statusbar" id="proxyStatus">Ready to browse</div>
+    <div class="web-viewport">
+      <div id="proxyHome" class="proxy-home">
+        <div class="proxy-home-icon">🌐</div>
+        <div class="proxy-home-title">WHAMIEE PROXY</div>
+        <div class="proxy-home-desc">Full web browser inside your entertainment hub<br>Search YouTube, Netflix, Google and more</div>
+        <div class="proxy-input-container">
+          <input id="homeProxySearch" type="text" placeholder="youtube.com, netflix.com, google.com..." autocomplete="off">
+          <button onclick="loadProxyPageFromHome()">BROWSE</button>
+        </div>
+      </div>
+      <iframe id="proxyFrame" style="display:none;"></iframe>
+    </div>
+  </section>
+</main>
+
+<script>
+let proxyHistory = [];
+let proxyHistoryIndex = -1;
+
+// Load proxy page from home search
+function loadProxyPageFromHome() {
+  let url = document.getElementById('homeProxySearch').value.trim();
+  document.getElementById('proxyUrl').value = url;
+  loadProxyPage();
+}
+
+// Main proxy loading function
+function loadProxyPage() {
+  let url = document.getElementById('proxyUrl').value.trim();
+  
+  if (!url) return;
+  
+  // Add protocol if missing
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = 'https://' + url;
+  }
+  
+  const frame = document.getElementById('proxyFrame');
+  const proxyHome = document.getElementById('proxyHome');
+  
+  updateProxyStatus(`Loading ${url}...`);
+  
+  // Show loading state
+  frame.style.display = 'block';
+  proxyHome.style.display = 'none';
+  
+  // Use multiple CORS proxy services as fallback
+  const corsProxies = [
+    `https://cors-anywhere.herokuapp.com/${url}`,
+    `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+    url // Try direct as last resort
+  ];
+  
+  let proxyIndex = 0;
+  
+  function tryProxy(index) {
+    if (index >= corsProxies.length) {
+      updateProxyStatus(`Could not load ${url}`);
+      frame.style.display = 'none';
+      proxyHome.style.display = 'flex';
+      return;
+    }
+    
+    frame.src = corsProxies[index];
+    
+    frame.onload = function() {
+      updateProxyStatus(`✓ Loaded: ${url}`);
+      // Add to history
+      if (proxyHistoryIndex < proxyHistory.length - 1) {
+        proxyHistory = proxyHistory.slice(0, proxyHistoryIndex + 1);
+      }
+      proxyHistory.push(url);
+      proxyHistoryIndex++;
+    };
+    
+    frame.onerror = function() {
+      if (index < corsProxies.length - 1) {
+        tryProxy(index + 1);
+      } else {
+        updateProxyStatus(`Error loading ${url}`);
+        frame.style.display = 'none';
+        proxyHome.style.display = 'flex';
+      }
+    };
+  }
+  
+  tryProxy(proxyIndex);
+}
+
+function proxyGoBack() {
+  if (proxyHistoryIndex > 0) {
+    proxyHistoryIndex--;
+    const url = proxyHistory[proxyHistoryIndex];
+    document.getElementById('proxyUrl').value = url;
+    loadProxyPage();
+  }
+}
+
+function proxyGoForward() {
+  if (proxyHistoryIndex < proxyHistory.length - 1) {
+    proxyHistoryIndex++;
+    const url = proxyHistory[proxyHistoryIndex];
+    document.getElementById('proxyUrl').value = url;
+    loadProxyPage();
+  }
+}
+
+function proxyReload() {
+  const frame = document.getElementById('proxyFrame');
+  if (frame.src) frame.src = frame.src;
+}
+
+function updateProxyStatus(message) {
+  const statusEl = document.getElementById('proxyStatus');
+  if (statusEl) statusEl.textContent = message;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Setup Enter key for proxy URL input
+  const proxyUrl = document.getElementById('proxyUrl');
+  const homeProxySearch = document.getElementById('homeProxySearch');
+  
+  if (proxyUrl) {
+    proxyUrl.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') loadProxyPage();
+    });
+  }
+  
+  if (homeProxySearch) {
+    homeProxySearch.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') loadProxyPageFromHome();
+    });
+  }
+});
+</script>
+
 </body>
 </html>

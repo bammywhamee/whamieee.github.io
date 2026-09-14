@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WHAMMIEE WEB - Proxy Browser</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fredoka:wght@400;500;600;700&display=swap');
+
+:root{
+  --bg:#070707;--panel:#111;--panel2:#171717;--line:rgba(255,255,255,.12);
+  --red:#ff2d50;--purple:#a56dff;--gold:#ffd34d;--muted:#8f8f8f;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;color:#fff;font-family:Fredoka,sans-serif;background:var(--bg);
+}
+button,input{font-family:inherit}
+a{color:inherit;text-decoration:none}
+
+/* LANDING PAGE */
+.landing{
+  position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 10% -10%,rgba(165,109,255,.14),transparent 28%),
+             radial-gradient(circle at 95% 0%,rgba(255,45,80,.15),transparent 30%),
+             var(--bg)
+}
+.landing.hidden{display:none}
+.landing-content{
+  text-align:center;max-width:680px;padding:40px 20px
+}
+.landing-logo{
+  font:800 72px/1 'Baloo 2';color:var(--red);margin-bottom:10px;
+  text-shadow:3px 3px #fff,6px 6px rgba(255,45,80,.18)
+}
+.landing-logo span{color:#fff}
+.landing-subtitle{
+  color:#c7c7c7;font-size:14px;margin-bottom:32px;line-height:1.6
+}
+
+/* SEARCH BAR */
+.search-container{
+  background:var(--panel);border:1px solid var(--line);border-radius:50px;
+  padding:12px 20px;display:flex;align-items:center;gap:12px;width:100%;max-width:600px;
+  margin:0 auto 20px;box-shadow:0 15px 50px rgba(0,0,0,.3)
+}
+.search-container input{
+  flex:1;background:transparent;border:0;outline:0;color:#fff;font-size:16px
+}
+.search-container input::placeholder{color:#6e6e6e}
+.search-btn{
+  background:var(--red);color:#fff;border:0;border-radius:50%;width:36px;height:36px;
+  cursor:pointer;font-weight:900;transition:.2s;display:flex;align-items:center;justify-content:center
+}
+.search-btn:hover{transform:scale(1.05);filter:brightness(1.1)}
+
+/* ENGINE SELECTOR */
+.engine-selector{
+  display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:16px
+}
+.engine-btn{
+  border:1px solid var(--line);background:#181818;color:#fff;border-radius:20px;
+  padding:7px 14px;font-size:11px;font-weight:800;cursor:pointer;transition:.2s
+}
+.engine-btn.active{background:var(--red);border-color:var(--red)}
+.engine-btn:hover{border-color:rgba(255,45,80,.6);background:rgba(255,45,80,.11)}
+
+/* BROWSER TOOLBAR */
+.toolbar{
+  min-height:56px;display:flex;align-items:center;gap:8px;padding:10px 16px;
+  border-bottom:1px solid var(--line);background:#0f0f0f;position:sticky;top:0;z-index:50
+}
+.brand{
+  font-weight:900;letter-spacing:1px;white-space:nowrap;margin-right:8px;
+  font:800 16px 'Baloo 2'
+}
+.brand span{color:var(--red)}
+.nav-btns{display:flex;gap:4px}
+.icon-btn{
+  width:36px;height:36px;border:1px solid var(--line);border-radius:8px;background:#151515;
+  color:#fff;cursor:pointer;font-size:14px;font-weight:900;transition:.18s;
+  display:flex;align-items:center;justify-content:center
+}
+.icon-btn:hover{background:#252525;border-color:#3a3a3a}
+.icon-btn:disabled{opacity:.4;cursor:not-allowed}
+.address-wrap{flex:1;min-width:120px;position:relative;display:flex;align-items:center;gap:6px}
+.address-bar{
+  width:100%;height:36px;border:1px solid var(--line);border-radius:8px;background:#0a0a0a;
+  color:#fff;padding:0 12px;outline:none;font-size:12px
+}
+.address-bar:focus{border-color:rgba(255,45,80,.6);box-shadow:0 0 0 2px rgba(255,45,80,.1)}
+.address-bar::placeholder{color:#555}
+.go-btn{
+  padding:0 12px;background:var(--red);color:#fff;border:0;border-radius:6px;
+  font-weight:900;cursor:pointer;font-size:10px;height:32px
+}
+.go-btn:hover{filter:brightness(1.1)}
+.status-bar{
+  min-height:24px;display:flex;align-items:center;padding:0 12px;border-bottom:1px solid #1a1a1a;
+  background:#080808;color:#777;font-size:10px
+}
+
+/* BROWSER VIEWPORT */
+.browser-shell{
+  height:calc(100vh - 56px);display:flex;flex-direction:column;background:#000
+}
+.viewport{
+  flex:1;min-height:0;position:relative;background:#000;overflow:hidden
+}
+.proxy-frame{
+  width:100%;height:100%;border:0;background:#fff;display:none
+}
+.frame-loading{
+  position:absolute;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;
+  justify-content:center;color:#fff;font-weight:900;z-index:10;backdrop-filter:blur(4px)
+}
+.frame-loading.active{display:flex}
+.loading-spinner{
+  width:40px;height:40px;border:3px solid rgba(255,45,80,.3);border-top-color:var(--red);
+  border-radius:50%;animation:spin 1s linear infinite
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.home-screen{
+  width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  color:#555;flex-direction:column;gap:20px;text-align:center;padding:40px 20px
+}
+.home-icon{font-size:64px;margin-bottom:10px}
+.home-title{font-size:24px;font-weight:900;color:#fff}
+.home-desc{font-size:12px;color:#777;margin-bottom:20px;line-height:1.5}
+.home-search-input{
+  max-width:500px;width:90%;padding:12px 16px;border:1px solid var(--line);
+  border-radius:8px;background:#0a0a0a;color:#fff;font-size:12px;outline:none
+}
+.home-search-input:focus{border-color:rgba(255,45,80,.6)}
+
+/* SETTINGS MODAL */
+.settings-modal{
+  position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.8);backdrop-filter:blur(8px);padding:20px
+}
+.settings-modal.open{display:flex}
+.settings-box{
+  background:var(--panel);border:1px solid var(--line);border-radius:16px;
+  padding:28px;max-width:420px;width:100%;box-shadow:0 25px 80px rgba(0,0,0,.6)
+}
+.settings-box h2{
+  margin:0 0 20px;font:800 24px 'Baloo 2'
+}
+.settings-group{
+  margin-bottom:20px
+}
+.settings-group label{
+  display:block;color:#aaa;font-size:11px;font-weight:800;margin-bottom:6px;text-transform:uppercase
+}
+.proxy-select{
+  width:100%;padding:8px 12px;background:#0a0a0a;border:1px solid var(--line);
+  border-radius:8px;color:#fff;font-size:11px;cursor:pointer
+}
+.proxy-select:focus{border-color:rgba(255,45,80,.6);outline:none}
+.close-btn{
+  position:absolute;top:12px;right:12px;width:28px;height:28px;border:1px solid var(--line);
+  background:#151515;color:#fff;border-radius:50%;cursor:pointer;font-weight:900
+}
+
+/* TABS */
+.tab-bar{
+  display:flex;gap:4px;padding:8px 12px;border-bottom:1px solid var(--line);
+  background:#0a0a0a;overflow-x:auto;flex-wrap:nowrap
+}
+.tab{
+  padding:6px 12px;background:#151515;border:1px solid var(--line);border-radius:6px;
+  color:#aaa;font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap;transition:.2s
+}
+.tab.active{background:var(--red);color:#fff;border-color:var(--red)}
+.tab-close{
+  margin-left:6px;cursor:pointer;opacity:.6
+}
+.tab:hover{border-color:rgba(255,45,80,.4)}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .landing-logo{font-size:48px}
+  .search-container{max-width:90vw}
+  .toolbar{flex-wrap:wrap}
+  .brand{width:100%}
+  .address-wrap{order:3;width:100%;margin-top:6px}
+  .browser-shell{height:calc(100vh - 100px)}
+}
+
+</style>
+</head>
+<body>
+
+<!-- LANDING PAGE -->
+<div id="landing" class="landing">
+  <div class="landing-content">
+    <div class="landing-logo">WHAMMIEE<span>WEB</span></div>
+    <p class="landing-subtitle">🌐 The fastest web proxy with multi-engine search capabilities</p>
+    
+    <div class="search-container">
+      <span style="font-size:18px">🔍</span>
+      <input id="landingSearch" type="text" placeholder="Search the web, watch YouTube, browse anonymously..." autocomplete="off">
+      <button class="search-btn" onclick="landingSearch()">→</button>
+    </div>
+
+    <div class="engine-selector" id="engineSelector">
+      <button class="engine-btn active" data-engine="google" onclick="setEngine(this)">🔎 Google</button>
+      <button class="engine-btn" data-engine="youtube" onclick="setEngine(this)">▶ YouTube</button>
+      <button class="engine-btn" data-engine="bing" onclick="setEngine(this)">Ⓑ Bing</button>
+      <button class="engine-btn" data-engine="duckduckgo" onclick="setEngine(this)">🦆 DuckDuckGo</button>
+      <button class="engine-btn" data-engine="reddit" onclick="setEngine(this)">🔗 Reddit</button>
+    </div>
+  </div>
+</div>
+
+<!-- BROWSER -->
+<div id="browserView" style="display:none;height:100vh;display:flex;flex-direction:column">
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="brand">WHAMMIEE<span>WEB</span></div>
+    <div class="nav-btns">
+      <button class="icon-btn" id="backBtn" onclick="goBack()" title="Back">←</button>
+      <button class="icon-btn" id="forwardBtn" onclick="goForward()" title="Forward">→</button>
+      <button class="icon-btn" onclick="reloadFrame()" title="Reload">⟳</button>
+      <button class="icon-btn" onclick="goHome()" title="Home">🏠</button>
+    </div>
+    <div class="address-wrap">
+      <input id="addressBar" class="address-bar" type="text" placeholder="Enter URL or search..." autocomplete="off">
+      <button class="go-btn" onclick="navigateTo()">GO</button>
+      <button class="icon-btn" onclick="openSettings()" title="Settings">⚙</button>
+    </div>
+  </div>
+
+  <!-- STATUS BAR -->
+  <div class="status-bar" id="statusBar">Ready</div>
+
+  <!-- BROWSER VIEWPORT -->
+  <div class="browser-shell">
+    <div class="viewport">
+      <div class="home-screen" id="homeScreen">
+        <div class="home-icon">🌐</div>
+        <div class="home-title">WHAMMIEE WEB</div>
+        <div class="home-desc">The ultimate proxy browser with multi-engine search</div>
+        <input class="home-search-input" id="homeSearch" type="text" placeholder="Search or enter URL..." autocomplete="off">
+      </div>
+      <iframe id="proxyFrame" class="proxy-frame"></iframe>
+      <div class="frame-loading" id="frameLoading">
+        <div>
+          <div class="loading-spinner"></div>
+          <div style="margin-top:12px">Loading...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div id="settingsModal" class="settings-modal">
+  <div class="settings-box">
+    <h2>⚙ Settings</h2>
+    <div class="settings-group">
+      <label>Proxy Service</label>
+      <select id="proxyService" class="proxy-select" onchange="updateProxyService()">
+        <option value="allorigins">AllOrigins (Most Reliable)</option>
+        <option value="corsanywhere">CORS Anywhere</option>
+        <option value="textproxy">TextProxy</option>
+        <option value="direct">Direct (No Proxy)</option>
+      </select>
+    </div>
+    <button class="close-btn" onclick="closeSettings()">✕</button>
+  </div>
+</div>
+
+<script>
+// ============ PROXY CONFIG ============
+const PROXY_SERVICES = {
+  allorigins: (url) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+  corsanywhere: (url) => `https://cors-anywhere.herokuapp.com/${url}`,
+  textproxy: (url) => `https://textproxy.io/api/browse?url=${encodeURIComponent(url)}`,
+  direct: (url) => url
+};
+
+const SEARCH_ENGINES = {
+  google: (query) => `https://www.google.com/search?q=${encodeURIComponent(query)}`,
+  youtube: (query) => `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,
+  bing: (query) => `https://www.bing.com/search?q=${encodeURIComponent(query)}`,
+  duckduckgo: (query) => `https://duckduckgo.com/?q=${encodeURIComponent(query)}`,
+  reddit: (query) => `https://reddit.com/r/all/search?q=${encodeURIComponent(query)}&restrict_sr=off`
+};
+
+let currentEngine = 'google';
+let currentProxy = 'allorigins';
+let history = [];
+let historyIndex = -1;
+
+// ============ LANDING PAGE ============
+function landingSearch() {
+  const query = document.getElementById('landingSearch').value.trim();
+  if (!query) return;
+  
+  showBrowser();
+  performSearch(query);
+}
+
+function setEngine(btn) {
+  document.querySelectorAll('.engine-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentEngine = btn.dataset.engine;
+}
+
+document.getElementById('landingSearch').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') landingSearch();
+});
+
+// ============ BROWSER ============
+function showBrowser() {
+  document.getElementById('landing').classList.add('hidden');
+  document.getElementById('browserView').style.display = 'flex';
+}
+
+function goHome() {
+  document.getElementById('landing').classList.remove('hidden');
+  document.getElementById('browserView').style.display = 'none';
+  history = [];
+  historyIndex = -1;
+  updateButtons();
+}
+
+function navigateTo() {
+  const input = document.getElementById('addressBar').value.trim();
+  if (!input) return;
+  
+  let url = input;
+  
+  // Check if it's a search query or URL
+  if (!input.includes('.') || (!input.startsWith('http://') && !input.startsWith('https://') && !input.includes('.'))) {
+    performSearch(input);
+  } else {
+    // It's a URL
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url;
+    }
+    loadPage(url);
+  }
+}
+
+function performSearch(query) {
+  const searchUrl = SEARCH_ENGINES[currentEngine](query);
+  loadPage(searchUrl);
+}
+
+function loadPage(url) {
+  const frame = document.getElementById('proxyFrame');
+  const homeScreen = document.getElementById('homeScreen');
+  const loading = document.getElementById('frameLoading');
+  
+  // Add to history
+  if (historyIndex < history.length - 1) {
+    history = history.slice(0, historyIndex + 1);
+  }
+  history.push(url);
+  historyIndex++;
+  
+  document.getElementById('addressBar').value = url;
+  updateButtons();
+  updateStatus(`Loading ${url}...`);
+  
+  frame.style.display = 'block';
+  homeScreen.style.display = 'none';
+  loading.classList.add('active');
+  
+  const proxyUrl = PROXY_SERVICES[currentProxy](url);
+  
+  // Try loading with proxy
+  frame.src = 'about:blank'; // Reset
+  
+  setTimeout(() => {
+    frame.src = proxyUrl;
+  }, 100);
+  
+  frame.onload = () => {
+    loading.classList.remove('active');
+    updateStatus(`✓ Loaded: ${new URL(url).hostname}`);
+  };
+  
+  frame.onerror = () => {
+    // Try fallback proxy
+    tryFallbackProxy(url, 0);
+  };
+}
+
+function tryFallbackProxy(url, index) {
+  const proxies = Object.keys(PROXY_SERVICES).filter(p => p !== currentProxy);
+  
+  if (index >= proxies.length) {
+    updateStatus('❌ Failed to load page');
+    document.getElementById('frameLoading').classList.remove('active');
+    return;
+  }
+  
+  const fallbackProxy = proxies[index];
+  const frame = document.getElementById('proxyFrame');
+  const proxyUrl = PROXY_SERVICES[fallbackProxy](url);
+  
+  frame.src = proxyUrl;
+  
+  frame.onerror = () => {
+    tryFallbackProxy(url, index + 1);
+  };
+}
+
+function reloadFrame() {
+  const frame = document.getElementById('proxyFrame');
+  if (frame.src && frame.src !== 'about:blank') {
+    frame.src = frame.src;
+  }
+}
+
+function goBack() {
+  if (historyIndex > 0) {
+    historyIndex--;
+    const url = history[historyIndex];
+    loadPage(url);
+  }
+}
+
+function goForward() {
+  if (historyIndex < history.length - 1) {
+    historyIndex++;
+    const url = history[historyIndex];
+    loadPage(url);
+  }
+}
+
+function updateButtons() {
+  document.getElementById('backBtn').disabled = historyIndex <= 0;
+  document.getElementById('forwardBtn').disabled = historyIndex >= history.length - 1;
+}
+
+function updateStatus(msg) {
+  document.getElementById('statusBar').textContent = msg;
+}
+
+function updateProxyService() {
+  currentProxy = document.getElementById('proxyService').value;
+  closeSettings();
+  if (history.length > 0) {
+    const url = history[historyIndex];
+    if (url) loadPage(url);
+  }
+}
+
+function openSettings() {
+  document.getElementById('settingsModal').classList.add('open');
+  document.getElementById('proxyService').value = currentProxy;
+}
+
+function closeSettings() {
+  document.getElementById('settingsModal').classList.remove('open');
+}
+
+// ============ HOME SCREEN ============
+document.getElementById('homeSearch').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    const query = e.target.value.trim();
+    if (query) performSearch(query);
+  }
+});
+
+// ============ ADDRESS BAR ============
+document.getElementById('addressBar').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') navigateTo();
+});
+
+// ============ MODAL CLOSE ============
+document.getElementById('settingsModal').addEventListener('click', (e) => {
+  if (e.target.id === 'settingsModal') closeSettings();
+});
+
+// ============ INIT ============
+updateButtons();
+</script>
+
+</body>
+</html>

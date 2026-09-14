@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>WHAMMIEE WEB - Deep Proxy Browser</title>
+<title>WHAMMIEE WEB - Browser Launcher</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fredoka:wght@400;500;600;700&display=swap');
 
@@ -43,7 +43,7 @@ a{color:inherit;text-decoration:none}
   color:#a56dff;font-size:11px;font-weight:700;margin-bottom:32px;
   display:flex;align-items:center;justify-content:center;gap:6px;
 }
-.security-badge::before{content:'🔒'}
+.security-badge::before{content:'🌐'}
 
 /* SEARCH BAR */
 .search-container{
@@ -199,8 +199,8 @@ a{color:inherit;text-decoration:none}
 <div id="landing" class="landing">
   <div class="landing-content">
     <div class="landing-logo">WHAMMIEE<span>WEB</span></div>
-    <p class="landing-subtitle">🌐 Deep proxy browser - complete server-side anonymity</p>
-    <div class="security-badge">Complete anonymity - Your IP is hidden</div>
+    <p class="landing-subtitle">🌐 Search, browse, and launch websites from one place</p>
+    <div class="security-badge">Static GitHub Pages mode</div>
     
     <div class="search-container">
       <span style="font-size:18px">🔍</span>
@@ -219,7 +219,7 @@ a{color:inherit;text-decoration:none}
 </div>
 
 <!-- BROWSER -->
-<div id="browserView" style="display:none;height:100vh;display:flex;flex-direction:column">
+<div id="browserView" style="display:none;height:100vh;flex-direction:column">
   <!-- TOOLBAR -->
   <div class="toolbar">
     <div class="brand">WHAMMIEE<span>WEB</span></div>
@@ -232,14 +232,15 @@ a{color:inherit;text-decoration:none}
     <div class="address-wrap">
       <input id="addressBar" class="address-bar" type="text" placeholder="Enter URL or search..." autocomplete="off">
       <button class="go-btn" id="goBtn" onclick="navigateTo()">GO</button>
-      <button class="icon-btn" onclick="openSettings()" title="Settings">⚙</button>
+      <button class="icon-btn" onclick="openCurrentExternal()" title="Open current page in a new tab">OPEN ↗</button>
+      <button class="icon-btn" onclick="openSettings()" title="Info">⚙</button>
     </div>
   </div>
 
   <!-- STATUS BAR -->
   <div class="status-bar" id="statusBar">
     <span>Ready</span>
-    <span class="status-security">🔒 Server-side proxied</span>
+    <span class="status-security">🌐 Direct browsing</span>
   </div>
 
   <!-- BROWSER VIEWPORT -->
@@ -248,15 +249,15 @@ a{color:inherit;text-decoration:none}
       <div class="home-screen" id="homeScreen">
         <div class="home-icon">🌐</div>
         <div class="home-title">WHAMMIEE WEB</div>
-        <div class="home-desc">Ultimate Deep Proxy - Complete anonymity</div>
+        <div class="home-desc">Search the web or enter a website address</div>
         <input class="home-search-input" id="homeSearch" type="text" placeholder="Search or enter URL..." autocomplete="off">
       </div>
       <iframe id="proxyFrame" class="proxy-frame"></iframe>
       <div class="frame-loading" id="frameLoading">
         <div class="loading-spinner"></div>
         <div class="loading-text">
-          <div>Tunneling through server...</div>
-          <div>Your IP is completely hidden</div>
+          <div>Loading page...</div>
+          <div>Some websites may block iframe viewing</div>
         </div>
       </div>
     </div>
@@ -266,231 +267,132 @@ a{color:inherit;text-decoration:none}
 <!-- SETTINGS MODAL -->
 <div id="settingsModal" class="settings-modal">
   <div class="settings-box">
-    <h2>⚙ Settings</h2>
-    <div class="settings-group">
-      <label>Server Address</label>
-      <input id="serverAddr" type="text" class="address-bar" placeholder="http://localhost:3000">
-    </div>
+    <h2>⚙ Browser Info</h2>
     <div class="settings-info">
-      <strong>🔒 How it works:</strong><br>
-      All requests are routed through the server. Websites cannot see your IP address or browser identity. Complete anonymity achieved through server-side rendering.
+      <strong>🌐 GitHub Pages mode</strong><br><br>
+      This version works without a backend server. Searches and URLs can be shown inside the page when the destination allows iframe embedding.
+      If a site blocks embedding, use the “OPEN ↗” button to open it normally in a new tab.
     </div>
     <button class="close-btn" onclick="closeSettings()">✕</button>
   </div>
 </div>
 
 <script>
-// ============ CONFIG ============
 let currentEngine = 'google';
-let serverAddr = localStorage.getItem('serverAddr') || window.location.origin;
 let history = [];
 let historyIndex = -1;
-let currentToken = null;
+let currentUrl = '';
 
-// ============ LANDING PAGE ============
+const engines = {
+  google: q => `https://www.google.com/search?q=${encodeURIComponent(q)}`,
+  youtube: q => `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`,
+  bing: q => `https://www.bing.com/search?q=${encodeURIComponent(q)}`,
+  duckduckgo: q => `https://duckduckgo.com/?q=${encodeURIComponent(q)}`,
+  reddit: q => `https://www.reddit.com/search/?q=${encodeURIComponent(q)}`
+};
+
+function looksLikeUrl(value) {
+  if (/^https?:\/\//i.test(value)) return true;
+  if (/^localhost(?::\d+)?(?:\/|$)/i.test(value)) return true;
+  return /^[a-z0-9-]+(?:\.[a-z0-9-]+)+(?:[/:?#].*)?$/i.test(value);
+}
+function normalizeUrl(value) {
+  value = value.trim();
+  if (/^https?:\/\//i.test(value)) return value;
+  if (/^localhost(?::\d+)?(?:\/|$)/i.test(value)) return 'http://' + value;
+  return 'https://' + value;
+}
+function setLoading(on) { document.getElementById('frameLoading').classList.toggle('active', !!on); }
+function safeHostname(url) { try { return new URL(url).hostname; } catch { return url; } }
+
 function landingSearch() {
   const query = document.getElementById('landingSearch').value.trim();
   if (!query) return;
-  
-  document.getElementById('landingSearchBtn').disabled = true;
   showBrowser();
-  performSearch(query);
+  routeInput(query);
 }
-
 function setEngine(btn) {
   document.querySelectorAll('.engine-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   currentEngine = btn.dataset.engine;
 }
+document.getElementById('landingSearch').addEventListener('keydown', e => { if (e.key === 'Enter') landingSearch(); });
 
-document.getElementById('landingSearch').addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') landingSearch();
-});
-
-// ============ BROWSER ============
 function showBrowser() {
   document.getElementById('landing').classList.add('hidden');
   document.getElementById('browserView').style.display = 'flex';
 }
-
 function goHome() {
   document.getElementById('landing').classList.remove('hidden');
   document.getElementById('browserView').style.display = 'none';
   document.getElementById('homeScreen').style.display = 'flex';
   document.getElementById('proxyFrame').style.display = 'none';
-  history = [];
-  historyIndex = -1;
-  currentToken = null;
-  updateButtons();
-  document.getElementById('landingSearchBtn').disabled = false;
+  setLoading(false);
 }
-
 function navigateTo() {
   const input = document.getElementById('addressBar').value.trim();
   if (!input) return;
-  
-  document.getElementById('goBtn').disabled = true;
-  
-  let url = input;
-  
-  // Check if it's a search query or URL
-  if (!input.includes('.') || (!input.startsWith('http://') && !input.startsWith('https://'))) {
-    performSearch(input);
-  } else {
-    // It's a URL
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      url = 'https://' + url;
-    }
-    loadPage(url);
-  }
+  routeInput(input);
 }
-
+function routeInput(input) { looksLikeUrl(input) ? loadPage(normalizeUrl(input)) : performSearch(input); }
 function performSearch(query) {
-  updateStatus(`🔍 Searching via ${currentEngine.toUpperCase()}...`);
-  
-  fetch(`${serverAddr}/api/search`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query, engine: currentEngine })
-  })
-  .then(r => r.json())
-  .then(data => {
-    const fullUrl = `${serverAddr}${data.url}`;
-    loadProxyPage(fullUrl, data.token);
-  })
-  .catch(err => {
-    updateStatus(`❌ Search failed: ${err.message}`);
-    document.getElementById('goBtn').disabled = false;
-  });
+  const url = engines[currentEngine](query);
+  updateStatus(`🔍 ${currentEngine.toUpperCase()} search: ${query}`);
+  loadPage(url);
 }
-
-function loadPage(url) {
-  updateStatus(`🔗 Loading ${new URL(url).hostname}...`);
-  
-  fetch(`${serverAddr}/api/navigate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url })
-  })
-  .then(r => r.json())
-  .then(data => {
-    const fullUrl = `${serverAddr}${data.url}`;
-    loadProxyPage(fullUrl, data.token);
-  })
-  .catch(err => {
-    updateStatus(`❌ Navigation failed: ${err.message}`);
-    document.getElementById('goBtn').disabled = false;
-  });
-}
-
-function loadProxyPage(fullUrl, token) {
-  // Add to history
-  if (historyIndex < history.length - 1) {
-    history = history.slice(0, historyIndex + 1);
+function loadPage(url, addToHistory = true) {
+  currentUrl = url;
+  if (addToHistory) {
+    if (historyIndex < history.length - 1) history = history.slice(0, historyIndex + 1);
+    history.push(url);
+    historyIndex = history.length - 1;
   }
-  history.push(fullUrl);
-  historyIndex++;
-  currentToken = token;
-  
   const frame = document.getElementById('proxyFrame');
   const homeScreen = document.getElementById('homeScreen');
-  const loading = document.getElementById('frameLoading');
-  
-  document.getElementById('addressBar').value = fullUrl.split('/api/proxy/')[1] || 'Loading...';
+  document.getElementById('addressBar').value = url;
   updateButtons();
-  
+  updateStatus(`🌐 Loading ${safeHostname(url)}...`);
   frame.style.display = 'block';
   homeScreen.style.display = 'none';
-  loading.classList.add('active');
-  
-  frame.src = fullUrl;
-  
-  frame.onload = () => {
-    loading.classList.remove('active');
-    updateStatus(`✓ Page loaded securely through server`);
-    document.getElementById('goBtn').disabled = false;
-  };
-  
-  frame.onerror = () => {
-    loading.classList.remove('active');
-    updateStatus(`❌ Failed to load page`);
-    document.getElementById('goBtn').disabled = false;
-  };
+  setLoading(true);
+  frame.onload = () => { setLoading(false); updateStatus(`✓ Loaded ${safeHostname(url)} — if blank or blocked, click OPEN ↗`); };
+  frame.onerror = () => { setLoading(false); updateStatus(`⚠ Could not embed ${safeHostname(url)} — click OPEN ↗`); };
+  frame.src = url;
+  setTimeout(() => setLoading(false), 6000);
 }
-
+function openCurrentExternal() {
+  const raw = currentUrl || document.getElementById('addressBar').value.trim();
+  if (!raw) return;
+  const finalUrl = looksLikeUrl(raw) ? normalizeUrl(raw) : engines[currentEngine](raw);
+  window.open(finalUrl, '_blank', 'noopener,noreferrer');
+}
 function reloadFrame() {
   const frame = document.getElementById('proxyFrame');
-  if (frame.src && frame.src !== 'about:blank') {
-    frame.src = frame.src;
-  }
+  if (currentUrl) { setLoading(true); frame.src = currentUrl; }
 }
-
 function goBack() {
-  if (historyIndex > 0) {
-    historyIndex--;
-    const url = history[historyIndex];
-    const frame = document.getElementById('proxyFrame');
-    frame.src = url;
-  }
+  if (historyIndex > 0) { historyIndex--; loadPage(history[historyIndex], false); }
 }
-
 function goForward() {
-  if (historyIndex < history.length - 1) {
-    historyIndex++;
-    const url = history[historyIndex];
-    const frame = document.getElementById('proxyFrame');
-    frame.src = url;
-  }
+  if (historyIndex < history.length - 1) { historyIndex++; loadPage(history[historyIndex], false); }
 }
-
 function updateButtons() {
   document.getElementById('backBtn').disabled = historyIndex <= 0;
   document.getElementById('forwardBtn').disabled = historyIndex >= history.length - 1;
 }
-
 function updateStatus(msg) {
-  document.getElementById('statusBar').innerHTML = `<span>${msg}</span><span class="status-security">🔒 Server-side proxied</span>`;
+  document.getElementById('statusBar').innerHTML = `<span>${msg}</span><span class="status-security">🌐 Direct browsing</span>`;
 }
+function openSettings() { document.getElementById('settingsModal').classList.add('open'); }
+function closeSettings() { document.getElementById('settingsModal').classList.remove('open'); }
 
-function openSettings() {
-  document.getElementById('settingsModal').classList.add('open');
-  document.getElementById('serverAddr').value = serverAddr;
-}
-
-function closeSettings() {
-  const newAddr = document.getElementById('serverAddr').value.trim();
-  if (newAddr) {
-    serverAddr = newAddr;
-    localStorage.setItem('serverAddr', serverAddr);
-  }
-  document.getElementById('settingsModal').classList.remove('open');
-}
-
-// ============ HOME SCREEN ============
-document.getElementById('homeSearch').addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') {
-    const query = e.target.value.trim();
-    if (query) {
-      document.getElementById('landingSearch').value = query;
-      performSearch(query);
-    }
-  }
+document.getElementById('homeSearch').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { const query = e.target.value.trim(); if (query) routeInput(query); }
 });
-
-// ============ ADDRESS BAR ============
-document.getElementById('addressBar').addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') navigateTo();
-});
-
-// ============ MODAL CLOSE ============
-document.getElementById('settingsModal').addEventListener('click', (e) => {
-  if (e.target.id === 'settingsModal') closeSettings();
-});
-
-// ============ INIT ============
+document.getElementById('addressBar').addEventListener('keydown', e => { if (e.key === 'Enter') navigateTo(); });
+document.getElementById('settingsModal').addEventListener('click', e => { if (e.target.id === 'settingsModal') closeSettings(); });
 updateButtons();
 </script>
 
 </body>
 </html>
-

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>WHAMMIEE WEB - Proxy Browser</title>
+<title>WHAMMIEE WEB - Deep Proxy Browser</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fredoka:wght@400;500;600;700&display=swap');
 
@@ -37,8 +37,13 @@ a{color:inherit;text-decoration:none}
 }
 .landing-logo span{color:#fff}
 .landing-subtitle{
-  color:#c7c7c7;font-size:14px;margin-bottom:32px;line-height:1.6
+  color:#c7c7c7;font-size:14px;margin-bottom:10px;line-height:1.6
 }
+.security-badge{
+  color:#a56dff;font-size:11px;font-weight:700;margin-bottom:32px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.security-badge::before{content:'🔒'}
 
 /* SEARCH BAR */
 .search-container{
@@ -55,6 +60,7 @@ a{color:inherit;text-decoration:none}
   cursor:pointer;font-weight:900;transition:.2s;display:flex;align-items:center;justify-content:center
 }
 .search-btn:hover{transform:scale(1.05);filter:brightness(1.1)}
+.search-btn:disabled{opacity:.5;cursor:not-allowed}
 
 /* ENGINE SELECTOR */
 .engine-selector{
@@ -94,13 +100,15 @@ a{color:inherit;text-decoration:none}
 .address-bar::placeholder{color:#555}
 .go-btn{
   padding:0 12px;background:var(--red);color:#fff;border:0;border-radius:6px;
-  font-weight:900;cursor:pointer;font-size:10px;height:32px
+  font-weight:900;cursor:pointer;font-size:10px;height:32px;transition:.2s
 }
 .go-btn:hover{filter:brightness(1.1)}
+.go-btn:disabled{opacity:.5;cursor:not-allowed}
 .status-bar{
-  min-height:24px;display:flex;align-items:center;padding:0 12px;border-bottom:1px solid #1a1a1a;
-  background:#080808;color:#777;font-size:10px
+  min-height:24px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 12px;border-bottom:1px solid #1a1a1a;background:#080808;color:#777;font-size:10px
 }
+.status-security{color:#a56dff}
 
 /* BROWSER VIEWPORT */
 .browser-shell{
@@ -113,8 +121,9 @@ a{color:inherit;text-decoration:none}
   width:100%;height:100%;border:0;background:#fff;display:none;overflow:auto
 }
 .frame-loading{
-  position:absolute;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;
-  justify-content:center;color:#fff;font-weight:900;z-index:10;backdrop-filter:blur(4px)
+  position:absolute;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;
+  justify-content:center;color:#fff;font-weight:900;z-index:10;backdrop-filter:blur(4px);
+  flex-direction:column;gap:16px
 }
 .frame-loading.active{display:flex}
 .loading-spinner{
@@ -123,18 +132,24 @@ a{color:inherit;text-decoration:none}
 }
 @keyframes spin{to{transform:rotate(360deg)}}
 
+.loading-text{
+  text-align:center;
+}
+.loading-text div:first-child{font-size:14px;margin-bottom:4px}
+.loading-text div:last-child{font-size:10px;color:#999}
+
 .home-screen{
   width:100%;height:100%;display:flex;align-items:center;justify-content:center;
   color:#555;flex-direction:column;gap:20px;text-align:center;padding:40px 20px
 }
 .home-icon{font-size:64px;margin-bottom:10px}
-.home-title{font-size:24px;font-weight:900;color:#fff}
-.home-desc{font-size:12px;color:#777;margin-bottom:20px;line-height:1.5}
+.home-title{font-size:28px;font-weight:900;color:#fff}
+.home-desc{font-size:12px;color:#999;margin-bottom:20px;line-height:1.5}
 .home-search-input{
   max-width:500px;width:90%;padding:12px 16px;border:1px solid var(--line);
-  border-radius:8px;background:#0a0a0a;color:#fff;font-size:12px;outline:none
+  border-radius:8px;background:#0a0a0a;color:#fff;font-size:12px;outline:none;transition:.2s
 }
-.home-search-input:focus{border-color:rgba(255,45,80,.6)}
+.home-search-input:focus{border-color:rgba(255,45,80,.6);box-shadow:0 0 0 2px rgba(255,45,80,.1)}
 
 /* SETTINGS MODAL */
 .settings-modal{
@@ -144,7 +159,8 @@ a{color:inherit;text-decoration:none}
 .settings-modal.open{display:flex}
 .settings-box{
   background:var(--panel);border:1px solid var(--line);border-radius:16px;
-  padding:28px;max-width:420px;width:100%;box-shadow:0 25px 80px rgba(0,0,0,.6)
+  padding:28px;max-width:420px;width:100%;box-shadow:0 25px 80px rgba(0,0,0,.6);
+  position:relative
 }
 .settings-box h2{
   margin:0 0 20px;font:800 24px 'Baloo 2'
@@ -155,30 +171,15 @@ a{color:inherit;text-decoration:none}
 .settings-group label{
   display:block;color:#aaa;font-size:11px;font-weight:800;margin-bottom:6px;text-transform:uppercase
 }
-.proxy-select{
-  width:100%;padding:8px 12px;background:#0a0a0a;border:1px solid var(--line);
-  border-radius:8px;color:#fff;font-size:11px;cursor:pointer
+.settings-info{
+  background:rgba(165,109,255,.1);border:1px solid rgba(165,109,255,.3);
+  border-radius:8px;padding:12px;font-size:11px;color:#c9b9ff;margin-top:20px;line-height:1.5
 }
-.proxy-select:focus{border-color:rgba(255,45,80,.6);outline:none}
 .close-btn{
   position:absolute;top:12px;right:12px;width:28px;height:28px;border:1px solid var(--line);
-  background:#151515;color:#fff;border-radius:50%;cursor:pointer;font-weight:900
+  background:#151515;color:#fff;border-radius:50%;cursor:pointer;font-weight:900;transition:.2s
 }
-
-/* TABS */
-.tab-bar{
-  display:flex;gap:4px;padding:8px 12px;border-bottom:1px solid var(--line);
-  background:#0a0a0a;overflow-x:auto;flex-wrap:nowrap
-}
-.tab{
-  padding:6px 12px;background:#151515;border:1px solid var(--line);border-radius:6px;
-  color:#aaa;font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap;transition:.2s
-}
-.tab.active{background:var(--red);color:#fff;border-color:var(--red)}
-.tab-close{
-  margin-left:6px;cursor:pointer;opacity:.6
-}
-.tab:hover{border-color:rgba(255,45,80,.4)}
+.close-btn:hover{background:#252525}
 
 /* RESPONSIVE */
 @media(max-width:768px){
@@ -198,12 +199,13 @@ a{color:inherit;text-decoration:none}
 <div id="landing" class="landing">
   <div class="landing-content">
     <div class="landing-logo">WHAMMIEE<span>WEB</span></div>
-    <p class="landing-subtitle">🌐 The fastest web proxy with multi-engine search capabilities</p>
+    <p class="landing-subtitle">🌐 Deep proxy browser - complete server-side anonymity</p>
+    <div class="security-badge">Complete anonymity - Your IP is hidden</div>
     
     <div class="search-container">
       <span style="font-size:18px">🔍</span>
-      <input id="landingSearch" type="text" placeholder="Search the web, watch YouTube, browse anonymously..." autocomplete="off">
-      <button class="search-btn" onclick="landingSearch()">→</button>
+      <input id="landingSearch" type="text" placeholder="Search or enter any URL..." autocomplete="off">
+      <button class="search-btn" id="landingSearchBtn" onclick="landingSearch()">→</button>
     </div>
 
     <div class="engine-selector" id="engineSelector">
@@ -229,13 +231,16 @@ a{color:inherit;text-decoration:none}
     </div>
     <div class="address-wrap">
       <input id="addressBar" class="address-bar" type="text" placeholder="Enter URL or search..." autocomplete="off">
-      <button class="go-btn" onclick="navigateTo()">GO</button>
+      <button class="go-btn" id="goBtn" onclick="navigateTo()">GO</button>
       <button class="icon-btn" onclick="openSettings()" title="Settings">⚙</button>
     </div>
   </div>
 
   <!-- STATUS BAR -->
-  <div class="status-bar" id="statusBar">Ready</div>
+  <div class="status-bar" id="statusBar">
+    <span>Ready</span>
+    <span class="status-security">🔒 Server-side proxied</span>
+  </div>
 
   <!-- BROWSER VIEWPORT -->
   <div class="browser-shell">
@@ -243,14 +248,15 @@ a{color:inherit;text-decoration:none}
       <div class="home-screen" id="homeScreen">
         <div class="home-icon">🌐</div>
         <div class="home-title">WHAMMIEE WEB</div>
-        <div class="home-desc">The ultimate proxy browser with multi-engine search</div>
+        <div class="home-desc">Ultimate Deep Proxy - Complete anonymity</div>
         <input class="home-search-input" id="homeSearch" type="text" placeholder="Search or enter URL..." autocomplete="off">
       </div>
-      <iframe id="proxyFrame" class="proxy-frame" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-pointer-lock allow-top-navigation"></iframe>
+      <iframe id="proxyFrame" class="proxy-frame"></iframe>
       <div class="frame-loading" id="frameLoading">
-        <div>
-          <div class="loading-spinner"></div>
-          <div style="margin-top:12px">Loading...</div>
+        <div class="loading-spinner"></div>
+        <div class="loading-text">
+          <div>Tunneling through server...</div>
+          <div>Your IP is completely hidden</div>
         </div>
       </div>
     </div>
@@ -263,32 +269,30 @@ a{color:inherit;text-decoration:none}
     <h2>⚙ Settings</h2>
     <div class="settings-group">
       <label>Server Address</label>
-      <input id="serverAddr" type="text" class="proxy-select" placeholder="http://localhost:3000" value="http://localhost:3000" style="padding:8px 12px;width:100%;background:#0a0a0a;border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:11px">
+      <input id="serverAddr" type="text" class="address-bar" placeholder="http://localhost:3000">
+    </div>
+    <div class="settings-info">
+      <strong>🔒 How it works:</strong><br>
+      All requests are routed through the server. Websites cannot see your IP address or browser identity. Complete anonymity achieved through server-side rendering.
     </div>
     <button class="close-btn" onclick="closeSettings()">✕</button>
   </div>
 </div>
 
 <script>
-// ============ PROXY CONFIG ============
-const SEARCH_ENGINES = {
-  google: (query) => `https://www.google.com/search?q=${encodeURIComponent(query)}`,
-  youtube: (query) => `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,
-  bing: (query) => `https://www.bing.com/search?q=${encodeURIComponent(query)}`,
-  duckduckgo: (query) => `https://duckduckgo.com/?q=${encodeURIComponent(query)}`,
-  reddit: (query) => `https://reddit.com/r/all/search?q=${encodeURIComponent(query)}&restrict_sr=off`
-};
-
+// ============ CONFIG ============
 let currentEngine = 'google';
-let serverAddr = localStorage.getItem('serverAddr') || 'http://localhost:3000';
+let serverAddr = localStorage.getItem('serverAddr') || window.location.origin;
 let history = [];
 let historyIndex = -1;
+let currentToken = null;
 
 // ============ LANDING PAGE ============
 function landingSearch() {
   const query = document.getElementById('landingSearch').value.trim();
   if (!query) return;
   
+  document.getElementById('landingSearchBtn').disabled = true;
   showBrowser();
   performSearch(query);
 }
@@ -312,19 +316,25 @@ function showBrowser() {
 function goHome() {
   document.getElementById('landing').classList.remove('hidden');
   document.getElementById('browserView').style.display = 'none';
+  document.getElementById('homeScreen').style.display = 'flex';
+  document.getElementById('proxyFrame').style.display = 'none';
   history = [];
   historyIndex = -1;
+  currentToken = null;
   updateButtons();
+  document.getElementById('landingSearchBtn').disabled = false;
 }
 
 function navigateTo() {
   const input = document.getElementById('addressBar').value.trim();
   if (!input) return;
   
+  document.getElementById('goBtn').disabled = true;
+  
   let url = input;
   
   // Check if it's a search query or URL
-  if (!input.includes('.') || (!input.startsWith('http://') && !input.startsWith('https://') && !input.includes('.'))) {
+  if (!input.includes('.') || (!input.startsWith('http://') && !input.startsWith('https://'))) {
     performSearch(input);
   } else {
     // It's a URL
@@ -336,47 +346,75 @@ function navigateTo() {
 }
 
 function performSearch(query) {
-  const searchUrl = SEARCH_ENGINES[currentEngine](query);
-  loadPage(searchUrl);
+  updateStatus(`🔍 Searching via ${currentEngine.toUpperCase()}...`);
+  
+  fetch(`${serverAddr}/api/search`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query, engine: currentEngine })
+  })
+  .then(r => r.json())
+  .then(data => {
+    const fullUrl = `${serverAddr}${data.url}`;
+    loadProxyPage(fullUrl, data.token);
+  })
+  .catch(err => {
+    updateStatus(`❌ Search failed: ${err.message}`);
+    document.getElementById('goBtn').disabled = false;
+  });
 }
 
 function loadPage(url) {
-  const frame = document.getElementById('proxyFrame');
-  const homeScreen = document.getElementById('homeScreen');
-  const loading = document.getElementById('frameLoading');
+  updateStatus(`🔗 Loading ${new URL(url).hostname}...`);
   
+  fetch(`${serverAddr}/api/navigate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url })
+  })
+  .then(r => r.json())
+  .then(data => {
+    const fullUrl = `${serverAddr}${data.url}`;
+    loadProxyPage(fullUrl, data.token);
+  })
+  .catch(err => {
+    updateStatus(`❌ Navigation failed: ${err.message}`);
+    document.getElementById('goBtn').disabled = false;
+  });
+}
+
+function loadProxyPage(fullUrl, token) {
   // Add to history
   if (historyIndex < history.length - 1) {
     history = history.slice(0, historyIndex + 1);
   }
-  history.push(url);
+  history.push(fullUrl);
   historyIndex++;
+  currentToken = token;
   
-  document.getElementById('addressBar').value = url;
+  const frame = document.getElementById('proxyFrame');
+  const homeScreen = document.getElementById('homeScreen');
+  const loading = document.getElementById('frameLoading');
+  
+  document.getElementById('addressBar').value = fullUrl.split('/api/proxy/')[1] || 'Loading...';
   updateButtons();
-  updateStatus(`Loading ${url}...`);
   
   frame.style.display = 'block';
   homeScreen.style.display = 'none';
   loading.classList.add('active');
   
-  // Use server-side proxy
-  const proxyUrl = `${serverAddr}/proxy?url=${encodeURIComponent(url)}`;
-  
-  frame.src = proxyUrl;
+  frame.src = fullUrl;
   
   frame.onload = () => {
     loading.classList.remove('active');
-    try {
-      updateStatus(`✓ Loaded: ${new URL(url).hostname}`);
-    } catch(e) {
-      updateStatus(`✓ Page loaded`);
-    }
+    updateStatus(`✓ Page loaded securely through server`);
+    document.getElementById('goBtn').disabled = false;
   };
   
   frame.onerror = () => {
     loading.classList.remove('active');
-    updateStatus(`❌ Failed to load page. Make sure server is running at ${serverAddr}`);
+    updateStatus(`❌ Failed to load page`);
+    document.getElementById('goBtn').disabled = false;
   };
 }
 
@@ -391,7 +429,8 @@ function goBack() {
   if (historyIndex > 0) {
     historyIndex--;
     const url = history[historyIndex];
-    loadPage(url);
+    const frame = document.getElementById('proxyFrame');
+    frame.src = url;
   }
 }
 
@@ -399,7 +438,8 @@ function goForward() {
   if (historyIndex < history.length - 1) {
     historyIndex++;
     const url = history[historyIndex];
-    loadPage(url);
+    const frame = document.getElementById('proxyFrame');
+    frame.src = url;
   }
 }
 
@@ -409,7 +449,7 @@ function updateButtons() {
 }
 
 function updateStatus(msg) {
-  document.getElementById('statusBar').textContent = msg;
+  document.getElementById('statusBar').innerHTML = `<span>${msg}</span><span class="status-security">🔒 Server-side proxied</span>`;
 }
 
 function openSettings() {
@@ -430,7 +470,10 @@ function closeSettings() {
 document.getElementById('homeSearch').addEventListener('keypress', (e) => {
   if (e.key === 'Enter') {
     const query = e.target.value.trim();
-    if (query) performSearch(query);
+    if (query) {
+      document.getElementById('landingSearch').value = query;
+      performSearch(query);
+    }
   }
 });
 
@@ -450,3 +493,4 @@ updateButtons();
 
 </body>
 </html>
+

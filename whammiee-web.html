@@ -110,7 +110,7 @@ a{color:inherit;text-decoration:none}
   flex:1;min-height:0;position:relative;background:#000;overflow:hidden
 }
 .proxy-frame{
-  width:100%;height:100%;border:0;background:#fff;display:none
+  width:100%;height:100%;border:0;background:#fff;display:none;overflow:auto
 }
 .frame-loading{
   position:absolute;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;
@@ -246,7 +246,7 @@ a{color:inherit;text-decoration:none}
         <div class="home-desc">The ultimate proxy browser with multi-engine search</div>
         <input class="home-search-input" id="homeSearch" type="text" placeholder="Search or enter URL..." autocomplete="off">
       </div>
-      <iframe id="proxyFrame" class="proxy-frame"></iframe>
+      <iframe id="proxyFrame" class="proxy-frame" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-pointer-lock allow-top-navigation"></iframe>
       <div class="frame-loading" id="frameLoading">
         <div>
           <div class="loading-spinner"></div>
@@ -262,13 +262,8 @@ a{color:inherit;text-decoration:none}
   <div class="settings-box">
     <h2>⚙ Settings</h2>
     <div class="settings-group">
-      <label>Proxy Service</label>
-      <select id="proxyService" class="proxy-select" onchange="updateProxyService()">
-        <option value="allorigins">AllOrigins (Most Reliable)</option>
-        <option value="corsanywhere">CORS Anywhere</option>
-        <option value="textproxy">TextProxy</option>
-        <option value="direct">Direct (No Proxy)</option>
-      </select>
+      <label>Server Address</label>
+      <input id="serverAddr" type="text" class="proxy-select" placeholder="http://localhost:3000" value="http://localhost:3000" style="padding:8px 12px;width:100%;background:#0a0a0a;border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#fff;font-size:11px">
     </div>
     <button class="close-btn" onclick="closeSettings()">✕</button>
   </div>
@@ -276,13 +271,6 @@ a{color:inherit;text-decoration:none}
 
 <script>
 // ============ PROXY CONFIG ============
-const PROXY_SERVICES = {
-  allorigins: (url) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-  corsanywhere: (url) => `https://cors-anywhere.herokuapp.com/${url}`,
-  textproxy: (url) => `https://textproxy.io/api/browse?url=${encodeURIComponent(url)}`,
-  direct: (url) => url
-};
-
 const SEARCH_ENGINES = {
   google: (query) => `https://www.google.com/search?q=${encodeURIComponent(query)}`,
   youtube: (query) => `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,
@@ -292,7 +280,7 @@ const SEARCH_ENGINES = {
 };
 
 let currentEngine = 'google';
-let currentProxy = 'allorigins';
+let serverAddr = localStorage.getItem('serverAddr') || 'http://localhost:3000';
 let history = [];
 let historyIndex = -1;
 
@@ -372,43 +360,23 @@ function loadPage(url) {
   homeScreen.style.display = 'none';
   loading.classList.add('active');
   
-  const proxyUrl = PROXY_SERVICES[currentProxy](url);
-  
-  // Try loading with proxy
-  frame.src = 'about:blank'; // Reset
-  
-  setTimeout(() => {
-    frame.src = proxyUrl;
-  }, 100);
-  
-  frame.onload = () => {
-    loading.classList.remove('active');
-    updateStatus(`✓ Loaded: ${new URL(url).hostname}`);
-  };
-  
-  frame.onerror = () => {
-    // Try fallback proxy
-    tryFallbackProxy(url, 0);
-  };
-}
-
-function tryFallbackProxy(url, index) {
-  const proxies = Object.keys(PROXY_SERVICES).filter(p => p !== currentProxy);
-  
-  if (index >= proxies.length) {
-    updateStatus('❌ Failed to load page');
-    document.getElementById('frameLoading').classList.remove('active');
-    return;
-  }
-  
-  const fallbackProxy = proxies[index];
-  const frame = document.getElementById('proxyFrame');
-  const proxyUrl = PROXY_SERVICES[fallbackProxy](url);
+  // Use server-side proxy
+  const proxyUrl = `${serverAddr}/proxy?url=${encodeURIComponent(url)}`;
   
   frame.src = proxyUrl;
   
+  frame.onload = () => {
+    loading.classList.remove('active');
+    try {
+      updateStatus(`✓ Loaded: ${new URL(url).hostname}`);
+    } catch(e) {
+      updateStatus(`✓ Page loaded`);
+    }
+  };
+  
   frame.onerror = () => {
-    tryFallbackProxy(url, index + 1);
+    loading.classList.remove('active');
+    updateStatus(`❌ Failed to load page. Make sure server is running at ${serverAddr}`);
   };
 }
 
@@ -444,21 +412,17 @@ function updateStatus(msg) {
   document.getElementById('statusBar').textContent = msg;
 }
 
-function updateProxyService() {
-  currentProxy = document.getElementById('proxyService').value;
-  closeSettings();
-  if (history.length > 0) {
-    const url = history[historyIndex];
-    if (url) loadPage(url);
-  }
-}
-
 function openSettings() {
   document.getElementById('settingsModal').classList.add('open');
-  document.getElementById('proxyService').value = currentProxy;
+  document.getElementById('serverAddr').value = serverAddr;
 }
 
 function closeSettings() {
+  const newAddr = document.getElementById('serverAddr').value.trim();
+  if (newAddr) {
+    serverAddr = newAddr;
+    localStorage.setItem('serverAddr', serverAddr);
+  }
   document.getElementById('settingsModal').classList.remove('open');
 }
 

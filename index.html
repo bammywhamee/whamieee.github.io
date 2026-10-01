@@ -952,7 +952,6 @@ body.whamiee-site-locked{overflow:hidden!important}
     <button class="active" data-page="home">HOME</button>
     <button data-page="movies">MOVIES</button>
     <button data-page="tv">TV SHOWS</button>
-    <button data-page="games">🎮 GAMES</button>
     <button data-page="favorites">FAVORITES</button>
   </nav>
   <label class="search">🔎 <input id="globalSearch" type="search" placeholder="Search movies & shows..." autocomplete="off"></label>
@@ -987,206 +986,22 @@ body.whamiee-site-locked{overflow:hidden!important}
   </section>
 </main>
 
-
-<!-- GAMES PAGE -->
-<main id="page-games" class="page">
-  <section class="hero" style="min-height:300px">
-    <div class="hero-inner">
-      <div class="kicker">🎮 PLAY & HAVE FUN</div>
-      <h1>GAMES ARCADE</h1>
-      <p>Play classic retro games, sports games, and more. All games run directly in your browser!</p>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="head"><h2>PLAY <span>GAMES</span> 🎮</h2></div>
-    <div class="games-page-grid" id="gamesGrid"></div>
-  </section>
-</main>
-
-<!-- GAME PLAYER MODAL -->
-<div class="game-modal" id="gameModal">
-  <div class="game-modal-box">
-    <div class="game-modal-top">
-      <div class="game-modal-title">
-        <b id="gameModalTitle">Game</b>
-        <small id="gameModalSubtitle">Play now</small>
-      </div>
-      <div class="game-modal-actions">
-        <a id="gameSourceLink" href="#" target="_blank" style="display:none">📄 SOURCE</a>
-        <button onclick="closeGameModal()">✕ CLOSE</button>
-      </div>
-    </div>
-    <div class="game-frame-wrap">
-      <iframe id="gameFrame"></iframe>
-    </div>
-    <div class="game-note">💡 Use arrow keys or mouse/touch to play. Press ESC or click CLOSE to exit.</div>
+<div class="extras-tab" onclick="toggleExtras()">📌 EXTRAS</div>
+<div class="extras-drawer" id="extrasDrawer">
+  <div class="extra-close" onclick="toggleExtras()">✕</div>
+  <h2>📌 EXTRAS</h2>
+  <p>Bonus content & utilities</p>
+  <div class="extra-card">
+    <b>Coming Soon</b>
+    <small>More features being added...</small>
   </div>
 </div>
 
-
 <script>
-const games = [
-  {
-    id: 1,
-    title: "Retro Bowl",
-    emoji: "🏈",
-    desc: "Manage and play classic American football. Coach your team to victory!",
-    cover: "🏈",
-    gameUrl: "https://kbhgames.com/retro-bowl",
-    source: "https://github.com/RusionSky/RetroNFL"
-  },
-  {
-    id: 2,
-    title: "Subway Surfers",
-    emoji: "🚇",
-    desc: "Run fast, jump, and dodge obstacles in the endless subway runner!",
-    cover: "🚇",
-    gameUrl: "https://g.codehs.com/api/assets/1694711285891_subway_surfers.html",
-    source: "https://github.com/kiranparajuli589/subway-surfers"
-  },
-  {
-    id: 3,
-    title: "Basketball Legends",
-    emoji: "🏀",
-    desc: "Play intense 1v1 basketball matches with legendary players!",
-    cover: "🏀",
-    gameUrl: "https://kbhgames.com/basketball-legends",
-    source: "https://github.com"
-  },
-  {
-    id: 4,
-    title: "Flappy Bird",
-    emoji: "🐦",
-    desc: "Navigate the bird through the pipes. Simple yet addictive!",
-    cover: "🐦",
-    gameUrl: "https://nebez.github.io/flappy-bird-game/",
-    source: "https://github.com/nebez/flappy-bird-game"
-  },
-  {
-    id: 5,
-    title: "Pac-Man",
-    emoji: "👾",
-    desc: "The classic maze chase game. Eat pellets and avoid ghosts!",
-    cover: "👾",
-    gameUrl: "https://kayladnls.github.io/pacman/",
-    source: "https://github.com/kayladnls/pacman"
-  },
-  {
-    id: 6,
-    title: "Snake Game",
-    emoji: "🐍",
-    desc: "Guide your snake to eat food and grow longer. Don't hit the walls!",
-    cover: "🐍",
-    gameUrl: "https://playsnakegame.com/",
-    source: "https://github.com"
-  },
-  {
-    id: 7,
-    title: "Tetris",
-    emoji: "🧩",
-    desc: "Stack and clear the falling blocks. A timeless puzzle classic!",
-    cover: "🧩",
-    gameUrl: "https://tetris.com/play-tetris",
-    source: "https://github.com"
-  },
-  {
-    id: 8,
-    title: "Chess",
-    emoji: "♟️",
-    desc: "Play chess against the computer. Test your strategic skills!",
-    cover: "♟️",
-    gameUrl: "https://lichess.org/",
-    source: "https://github.com/ornicar/lila"
-  }
-];
-
-function playGame(gameId) {
-  const game = games.find(g => g.id === gameId);
-  if (!game) return;
-
-  document.getElementById('gameModalTitle').textContent = game.title;
-  document.getElementById('gameModalSubtitle').textContent = game.desc;
-  document.getElementById('gameFrame').src = game.gameUrl;
-  
-  const sourceLink = document.getElementById('gameSourceLink');
-  if (game.source) {
-    sourceLink.href = game.source;
-    sourceLink.style.display = 'inline-flex';
-  } else {
-    sourceLink.style.display = 'none';
-  }
-
-  document.getElementById('gameModal').classList.add('open');
-}
-
-function closeGameModal() {
-  document.getElementById('gameModal').classList.remove('open');
-  document.getElementById('gameFrame').src = '';
-}
-
-function renderGames() {
-  const grid = document.getElementById('gamesGrid');
-  grid.innerHTML = games.map(game => `
-    <div class="game-library-card">
-      <div class="game-cover">
-        <div style="width:100%;height:100%;display:grid;place-items:center;font-size:60px;background:linear-gradient(135deg,#1a1a1a,#0a0a0a)">
-          ${game.emoji}
-        </div>
-      </div>
-      <div class="game-library-body">
-        <h3>${game.title}</h3>
-        <div class="game-library-meta">CLASSIC GAME</div>
-        <div class="game-library-desc">${game.desc}</div>
-        <div class="game-library-actions">
-          <button class="game-play-btn" onclick="playGame(${game.id})">▶ PLAY</button>
-          <a href="${game.source}" target="_blank" class="game-source-btn">📄</a>
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  renderGames();
-});
-
-// Navigation
-document.querySelectorAll('.nav button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const page = btn.dataset.page;
-    goPage(page);
-  });
-});
-
-function goPage(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(`page-${page}`).classList.add('active');
-  
-  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
-  document.querySelector(`[data-page="${page}"]`).classList.add('active');
-}
-
-// Main lock functionality
-const CORRECT_CODE = '1234';
-document.getElementById('whamieeMainUnlockBtn').addEventListener('click', () => {
-  const code = document.getElementById('whamieeMainCode').value;
-  const error = document.getElementById('whamieeMainLockError');
-  
-  if (code === CORRECT_CODE) {
-    document.getElementById('whamieeMainLock').classList.add('unlocked');
-    document.body.classList.remove('whamiee-site-locked');
-  } else {
-    error.textContent = 'Invalid code. Try again!';
-    document.getElementById('whamieeMainCode').value = '';
-  }
-});
-
-document.getElementById('whamieeMainCode').addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') {
-    document.getElementById('whamieeMainUnlockBtn').click();
-  }
-});
+function toggleExtras(){document.getElementById('extrasDrawer').classList.toggle('open')}
+function goPage(p){document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));document.getElementById(`page-${p}`).classList.add('active');document.querySelectorAll('.nav button').forEach(e=>e.classList.remove('active'));document.querySelector(`[data-page="${p}"]`).classList.add('active')}
+document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>goPage(b.dataset.page)));
+const CORRECT_CODE='1234';document.getElementById('whamieeMainUnlockBtn').addEventListener('click',()=>{const c=document.getElementById('whamieeMainCode').value;if(c===CORRECT_CODE){document.getElementById('whamieeMainLock').classList.add('unlocked');document.body.classList.remove('whamiee-site-locked')}else{document.getElementById('whamieeMainLockError').textContent='Invalid code. Try again!';document.getElementById('whamieeMainCode').value=''}});document.getElementById('whamieeMainCode').addEventListener('keypress',e=>{if(e.key==='Enter')document.getElementById('whamieeMainUnlockBtn').click()})
 </script>
 </body>
 </html>
